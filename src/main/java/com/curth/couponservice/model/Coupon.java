@@ -18,5 +18,5 @@ public class Coupon {
     private String code;
     private String description;
     private BigDecimal discount;
-    private String expiryDate;
+    private String expDate;
 }

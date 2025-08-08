@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/couponapi")
-public class CouponController {
+public class CouponRestController {
 
     @Autowired
     CouponRepository couponRepository;
