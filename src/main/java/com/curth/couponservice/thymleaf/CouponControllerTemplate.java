@@ -2,14 +2,17 @@ package com.curth.couponservice.thymleaf;
 
 import com.curth.couponservice.model.Coupon;
 import com.curth.couponservice.repository.CouponRepository;
+import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+@CrossOrigin
 @Controller
-public class CouponController {
+public class CouponControllerTemplate {
 
     @Autowired
     private CouponRepository repo;
@@ -34,7 +37,11 @@ public class CouponController {
     public ModelAndView getCoupon(String code) {
         ModelAndView mav = new ModelAndView("couponDetails");
         System.out.println(code);
-        mav.addObject(repo.findByCode(code));
+        Coupon coupon = repo.findByCode(code);
+        if (coupon == null) {
+            throw new ObjectNotFoundException("Coupon now found", Coupon.class);
+        }
+        mav.addObject(coupon);
         return mav;
     }
 

@@ -11,6 +11,8 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
@@ -21,10 +23,12 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class WebSecurityConfig {
 
     public final UserDetailsService userDetailsService;
@@ -56,25 +60,37 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // http.httpBasic(Customizer.withDefaults());
-        //  http.formLogin(Customizer.withDefaults());
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.csrf(AbstractHttpConfigurer::disable);
+// Diable this to use global/method level security
+/*                .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize ->
                         authorize.requestMatchers(HttpMethod.GET, "/user/**").hasAnyRole("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.GET, "/showCreateCoupon", "/createCoupon", "/createResponse")
                                 .hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/user/**").hasAnyRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/couponapi/coupon/**", "/showGetCoupon")
-                                .hasAnyRole("USER", "ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/couponapi/coupon", "/saveCoupon").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/getCoupon").hasAnyRole("ADMIN", "USER")
-                                .requestMatchers("/", "login").permitAll())
+                                .requestMatchers(HttpMethod.GET,"/showGetCoupon", "/index", "/getCoupon", "/couponDetails")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.POST,"/getCoupon", "/couponDetails")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.POST, "/saveCoupon").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/couponapi/coupon/**").hasAnyRole("USER", "ADMIN")
+                                .requestMatchers("/", "/login", "/showReg", "/registerUser").permitAll())
                 .logout(logout ->
                         logout.logoutUrl("/logout").logoutSuccessUrl("/")
-                                .invalidateHttpSession(true).deleteCookies("JSESSIONID"));
+                                .invalidateHttpSession(true).deleteCookies("JSESSIONID"));*/
+
+        http.csrf(AbstractHttpConfigurer::disable)
+                .cors(corsCustomizer -> corsCustomizer
+                        .configurationSource(request -> {
+                            var corsConfig = new CorsConfiguration();
+                            corsConfig.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+                            corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                            corsConfig.setAllowedHeaders(List.of("*"));
+                            corsConfig.setAllowCredentials(true);
+                            return corsConfig;
+                        }));
 
         http.securityContext((securityContext) -> securityContext.requireExplicitSave(true));
         return http.build();
     }
-
 }

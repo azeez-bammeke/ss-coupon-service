@@ -3,6 +3,7 @@ package com.curth.couponservice.controller;
 import com.curth.couponservice.model.Coupon;
 import com.curth.couponservice.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,11 +14,13 @@ public class CouponRestController {
     CouponRepository couponRepository;
 
     @PostMapping("/coupon")
+    @PreAuthorize("hasRole('ADMIN')")
     public Coupon createCoupon(@RequestBody Coupon coupon) {
         return couponRepository.save(coupon);
     }
 
     @GetMapping("/coupon/{code}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Coupon getCouponByCode(@PathVariable String code) {
         return couponRepository.findByCode(code);
     }
